@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Energy App Android</title>
+    
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-wrapper">
+        
+        <header class="app-header">
+            <div class="brand">
+                <div>
+                    <h1 class="app-title">Energy Monitor</h1>
+                    <span id="status-text" class="status-badge"><i class="fa-solid fa-circle"></i> CONNECTING...</span>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <img src="deret-logo.png" alt="Logos" class="multi-logo-img">
+            </div>
+        </header>
+
+        <main class="app-content">
+            
+            <section class="summary-grid">
+                <div class="summary-card highlight">
+                    <p class="card-label">Total KWh</p>
+                    <h2 id="val-kwh">0.0</h2>
+                    <p class="trend up"><i class="fa-solid fa-bolt"></i> Accumulative</p>
+                </div>
+                <div class="summary-card">
+                    <p class="card-label">Active Power</p>
+                    <h2 id="val-kw-tot">0.00 <span class="unit">kW</span></h2>
+                    <p class="trend down">Real-time</p>
+                </div>
+                <div class="summary-card">
+                    <p class="card-label">Reactive Power</p>
+                    <h2 id="val-kvar-tot">0.00 <span class="unit">kVAr</span></h2>
+                    <p class="trend up">Real-time</p>
+                </div>
+            </section>
+
+            <section class="chart-panel">
+                <div class="panel-head">
+                    <h3>Energy Trends</h3>
+                    <i class="fa-solid fa-expand"></i>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="energyChart"></canvas>
+                </div>
+                <div class="chart-buttons-scroll">
+                    <button onclick="updateChart('AMPERE')" class="active">AMP</button>
+                    <button onclick="updateChart('VOLTAGE')">VOLT</button>
+                    <button onclick="updateChart('KW')">KW</button>
+                    <button onclick="updateChart('KVA')">KVA</button>
+                </div>
+            </section>
+
+            <section class="details-section">
+                <div class="panel-head">
+                    <h3>Phase Details</h3>
+                </div>
+                <div class="details-grid">
+                    <div class="detail-card">
+                        <p class="card-label">AMPERE</p>
+                        <h3 class="val-text" id="val-ampere">0.00 A</h3>
+                        <select id="line-ampere" class="line-select">
+                            <option value="R">Phase R</option>
+                            <option value="S">Phase S</option>
+                            <option value="T">Phase T</option>
+                        </select>
+                    </div>
+                    <div class="detail-card">
+                        <p class="card-label">VOLTAGE</p>
+                        <h3 class="val-text" id="val-volt">0.0 V</h3>
+                        <select id="line-volt" class="line-select">
+                            <option value="RN">Line R-N</option>
+                            <option value="SN">Line S-N</option>
+                            <option value="TN">Line T-N</option>
+                            <option value="RS">Line R-S</option>
+                            <option value="ST">Line S-T</option>
+                            <option value="RT">Line R-T</option>
+                        </select>
+                    </div>
+                    <div class="detail-card">
+                        <p class="card-label">POWER (KW)</p>
+                        <h3 class="val-text" id="val-kw">0.00 kW</h3>
+                        <select id="line-kw" class="line-select">
+                            <option value="R">Phase R</option>
+                            <option value="S">Phase S</option>
+                            <option value="T">Phase T</option>
+                        </select>
+                    </div>
+                    <div class="detail-card">
+                        <p class="card-label">POWER (KVA)</p>
+                        <h3 class="val-text" id="val-kva">0.00 kVA</h3>
+                        <select id="line-kva" class="line-select">
+                            <option value="R">Phase R</option>
+                            <option value="S">Phase S</option>
+                            <option value="T">Phase T</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+            
+            <div style="height: 80px;"></div>
+        </main>
+
+        <nav class="bottom-nav">
+            <div class="nav-item active">
+                <i class="fa-solid fa-border-all"></i>
+                <span>Home</span>
+            </div>
+            <div class="nav-item">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Logs</span>
+            </div>
+            <div class="nav-item">
+                <i class="fa-solid fa-gear"></i>
+                <span>Settings</span>
+            </div>
+        </nav>
+
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
+    <script src="script.js"></script>
+</body>
+</html>
