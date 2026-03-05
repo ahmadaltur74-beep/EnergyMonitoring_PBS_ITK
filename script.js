@@ -4,13 +4,34 @@
 const firebaseConfig = {
     databaseURL: "https://energy-monitoring-pbs-itk-default-rtdb.asia-southeast1.firebasedatabase.app/"
 };
-
-// Inisialisasi Firebase
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
 // ==========================================
-// 2. INISIALISASI GRAFIK CHART.JS
+// 2. SISTEM NAVIGASI TAB
+// ==========================================
+const navHome = document.getElementById('nav-home');
+const navLogs = document.getElementById('nav-logs');
+const viewHome = document.getElementById('view-home');
+const viewLogs = document.getElementById('view-logs');
+
+navHome.addEventListener('click', () => {
+    navHome.classList.add('active');
+    navLogs.classList.remove('active');
+    viewHome.style.display = 'block';
+    viewLogs.style.display = 'none';
+    energyChart.update(); // Menggambar ulang grafik saat tab kembali dibuka
+});
+
+navLogs.addEventListener('click', () => {
+    navLogs.classList.add('active');
+    navHome.classList.remove('active');
+    viewLogs.style.display = 'block';
+    viewHome.style.display = 'none';
+});
+
+// ==========================================
+// 3. INISIALISASI GRAFIK CHART.JS
 // ==========================================
 const ctx = document.getElementById('energyChart').getContext('2d');
 let gradientOrange = ctx.createLinearGradient(0, 0, 0, 200);
@@ -46,22 +67,11 @@ let energyChart = new Chart(ctx, {
     }
 });
 
-// ==========================================
-// 3. VARIABEL PENAMPUNG DATA
-// ==========================================
-let dbData = {
-    AMPERE: { R: 0, S: 0, T: 0 }, 
-    VOLTAGE: { RN: 0, SN: 0, TN: 0, RS: 0, ST: 0, RT: 0 },
-    KW: { R: 0, S: 0, T: 0, TOTAL: 0 }, 
-    KVA: { R: 0, S: 0, T: 0, TOTAL: 0 },
-    KVAR: { TOTAL: 0 },
-    KWH: { TOTAL: 0 }
-};
-
+let dbData = { AMPERE: { R: 0 }, VOLTAGE: { RS: 0 }, KW: { TOTAL: 0 }, KVA: { TOTAL: 0 }, KVAR: { TOTAL: 0 }, KWH: { TOTAL: 0 } };
 let currentChartCategory = 'AMPERE';
 
 // ==========================================
-// 4. FUNGSI UPDATE UI DASHBOARD
+// 4. FUNGSI UPDATE UI (HOME)
 // ==========================================
 function updateDashboard() {
     const lineAmpere = document.getElementById('line-ampere').value;
@@ -74,23 +84,16 @@ function updateDashboard() {
     document.getElementById('val-kw').innerText = `${(dbData.KW[lineKW] || 0).toFixed(2)} kW`;
     document.getElementById('val-kva').innerText = `${(dbData.KVA[lineKVA] || 0).toFixed(2)} kVA`;
 
-    document.getElementById('val-kwh').innerText = (dbData.KWH.TOTAL || 0).toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1});
+    document.getElementById('val-kwh').innerText = (dbData.KWH.TOTAL || 0).toLocaleString('en-US', {minimumFractionDigits: 1});
     document.getElementById('val-kw-tot').innerText = (dbData.KW.TOTAL || 0).toFixed(2);
     document.getElementById('val-kvar-tot').innerText = (dbData.KVAR.TOTAL || 0).toFixed(2);
 }
 
-// Event Listener untuk Dropdown
-document.querySelectorAll('.line-select').forEach(select => {
-    select.addEventListener('change', updateDashboard);
-});
+document.querySelectorAll('.line-select').forEach(select => select.addEventListener('change', updateDashboard));
 
-// ==========================================
-// 5. FUNGSI TOMBOL GRAFIK
-// ==========================================
 function updateChart(category) {
     document.querySelectorAll('.chart-buttons-scroll button').forEach(btn => btn.classList.remove('active'));
     event.target.classList.add('active');
-    
     currentChartCategory = category;
 
     if (category === 'AMPERE') { energyChart.data.datasets[0].borderColor = '#ff9800'; } 
@@ -103,23 +106,19 @@ function updateChart(category) {
 }
 
 // ==========================================
-// 6. LISTENER FIREBASE (PUSH REAL-TIME)
+// 5. LISTENER FIREBASE & LOG PENCATATAN
 // ==========================================
 const statusText = document.getElementById('status-text');
-console.log("Mencoba terhubung ke Firebase..."); 
+const logsTbody = document.getElementById('logs-tbody');
 
 database.ref('monitoring').on('value', (snapshot) => {
     const data = snapshot.val();
-    console.log("Data Firebase:", data); 
     
     if (data) {
-        // Timpa data lokal dengan data dari Firebase
         dbData = data;
-        
-        // Perbarui UI
         updateDashboard();
 
-        // Update animasi ujung grafik
+        // 1. Update Garis Grafik Bergerak
         let liveValue = 0;
         if(currentChartCategory === 'AMPERE') liveValue = dbData.AMPERE.R;
         else if(currentChartCategory === 'VOLTAGE') liveValue = dbData.VOLTAGE.RS;
@@ -131,14 +130,29 @@ database.ref('monitoring').on('value', (snapshot) => {
         chartData.push(liveValue); 
         energyChart.update();
 
-        // Indikator Status
+        // 2. Masukkan Data ke Tabel Logs (Secara Berkelanjutan)
+        const waktuSekarang = new Date().toLocaleTimeString('id-ID', { hour12: false });
+        
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+            <td>${data.last_update ? data.last_update.split(' ')[1] : waktuSekarang}</td>
+            <td>${(data.VOLTAGE.RS || 0).toFixed(1)}</td>
+            <td>${(data.AMPERE.R || 0).toFixed(2)}</td>
+            <td>${(data.KW.TOTAL || 0).toFixed(2)}</td>
+        `;
+        
+        // Menyisipkan baris baru selalu di urutan paling atas
+        logsTbody.prepend(newRow);
+
+        // Membatasi tabel hanya menyimpan 100 baris terbaru agar browser tidak berat
+        if (logsTbody.children.length > 100) {
+            logsTbody.removeChild(logsTbody.lastChild);
+        }
+
         statusText.innerHTML = '<i class="fa-solid fa-circle"></i> ONLINE';
         statusText.style.color = 'var(--accent-orange)';
-    } else {
-        console.warn("Terhubung ke Firebase, tetapi folder 'monitoring' kosong.");
     }
 }, (error) => {
-    console.error("Gagal terhubung ke Firebase:", error);
     statusText.innerHTML = '<i class="fa-solid fa-circle"></i> OFFLINE';
     statusText.style.color = 'red';
 });

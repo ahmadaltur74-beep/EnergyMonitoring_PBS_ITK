@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Energy App Android</title>
-    
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -19,14 +18,12 @@
                     <span id="status-text" class="status-badge"><i class="fa-solid fa-circle"></i> CONNECTING...</span>
                 </div>
             </div>
-            
             <div class="header-actions">
                 <img src="deret-logo.png" alt="Logos" class="multi-logo-img">
             </div>
         </header>
 
-        <main class="app-content">
-            
+        <main class="app-content" id="view-home">
             <section class="summary-grid">
                 <div class="summary-card highlight">
                     <p class="card-label">Total KWh</p>
@@ -107,22 +104,40 @@
                     </div>
                 </div>
             </section>
+            <div style="height: 80px;"></div>
+        </main>
+
+        <main class="app-content" id="view-logs" style="display: none;">
+            <div class="panel-head" style="margin-bottom: 15px;">
+                <h3>Live Data Logs</h3>
+                <span style="font-size: 10px; color: var(--accent-orange);">Session History</span>
+            </div>
             
+            <div class="logs-container">
+                <table class="logs-table">
+                    <thead>
+                        <tr>
+                            <th>Waktu</th>
+                            <th>Volt (RS)</th>
+                            <th>Ampere (R)</th>
+                            <th>kW (Tot)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logs-tbody">
+                        </tbody>
+                </table>
+            </div>
             <div style="height: 80px;"></div>
         </main>
 
         <nav class="bottom-nav">
-            <div class="nav-item active">
+            <div class="nav-item active" id="nav-home">
                 <i class="fa-solid fa-border-all"></i>
                 <span>Home</span>
             </div>
-            <div class="nav-item">
-                <i class="fa-solid fa-chart-line"></i>
+            <div class="nav-item" id="nav-logs">
+                <i class="fa-solid fa-list"></i>
                 <span>Logs</span>
-            </div>
-            <div class="nav-item">
-                <i class="fa-solid fa-gear"></i>
-                <span>Settings</span>
             </div>
         </nav>
 
@@ -130,7 +145,6 @@
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    
     <script src="script.js"></script>
 </body>
 </html>
