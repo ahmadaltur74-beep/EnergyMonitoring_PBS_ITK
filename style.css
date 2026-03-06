@@ -26,7 +26,7 @@ body { margin: 0; font-family: 'Segoe UI', Roboto, Helvetica, sans-serif; backgr
 .status-badge i { font-size: 8px; margin-right: 3px; }
 .header-actions { display: flex; align-items: center; }
 /* Ukuran Logo Diperbesar */
-.multi-logo-img { height: 48px; width: auto; max-width: 200px; object-fit: contain; }
+.multi-logo-img { height: 40px; width: auto; max-width: 200px; object-fit: contain; }
 
 /* KONTEN */
 .app-content { flex: 1; overflow-y: auto; padding: 15px; }
@@ -73,3 +73,4 @@ body { margin: 0; font-family: 'Segoe UI', Roboto, Helvetica, sans-serif; backgr
 .nav-item span { font-size: 10px; font-weight: 500;}
 
 .nav-item.active { color: var(--accent-blue); }
+
