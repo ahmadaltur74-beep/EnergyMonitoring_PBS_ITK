@@ -20,7 +20,7 @@ navHome.addEventListener('click', () => {
     navLogs.classList.remove('active');
     viewHome.style.display = 'block';
     viewLogs.style.display = 'none';
-    energyChart.update(); // Menggambar ulang grafik saat tab kembali dibuka
+    energyChart.update();
 });
 
 navLogs.addEventListener('click', () => {
@@ -31,12 +31,12 @@ navLogs.addEventListener('click', () => {
 });
 
 // ==========================================
-// 3. INISIALISASI GRAFIK CHART.JS
+// 3. INISIALISASI GRAFIK CHART.JS (TEMA BIRU & SMOOTH)
 // ==========================================
 const ctx = document.getElementById('energyChart').getContext('2d');
-let gradientOrange = ctx.createLinearGradient(0, 0, 0, 200);
-gradientOrange.addColorStop(0, 'rgba(255, 152, 0, 0.4)');
-gradientOrange.addColorStop(1, 'rgba(255, 152, 0, 0.0)');
+let gradientBlue = ctx.createLinearGradient(0, 0, 0, 200);
+gradientBlue.addColorStop(0, 'rgba(0, 168, 255, 0.4)'); // Biru transparan atas
+gradientBlue.addColorStop(1, 'rgba(0, 168, 255, 0.0)'); // Transparan bawah
 
 let energyChart = new Chart(ctx, {
     type: 'line',
@@ -45,11 +45,11 @@ let energyChart = new Chart(ctx, {
         datasets: [{
             label: 'AMPERE',
             data: [0, 0, 0, 0, 0, 0, 0],
-            borderColor: '#ff9800',
-            backgroundColor: gradientOrange,
+            borderColor: '#00a8ff', // Garis biru utama
+            backgroundColor: gradientBlue,
             borderWidth: 2,
             pointBackgroundColor: '#121215',
-            pointBorderColor: '#ff9800',
+            pointBorderColor: '#00a8ff',
             pointBorderWidth: 2,
             pointRadius: 3,
             fill: true,
@@ -59,6 +59,10 @@ let energyChart = new Chart(ctx, {
     options: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: {
+            duration: 500, // Membuat transisi garis lebih mengalir
+            easing: 'linear'
+        },
         plugins: { legend: { display: false } },
         scales: {
             y: { beginAtZero: true, grid: { color: 'rgba(255, 255, 255, 0.03)' }, ticks: { color: '#888888', font: {size: 10} } },
@@ -96,20 +100,49 @@ function updateChart(category) {
     event.target.classList.add('active');
     currentChartCategory = category;
 
-    if (category === 'AMPERE') { energyChart.data.datasets[0].borderColor = '#ff9800'; } 
-    else if (category === 'VOLTAGE') { energyChart.data.datasets[0].borderColor = '#ffb74d'; } 
-    else if (category === 'KW') { energyChart.data.datasets[0].borderColor = '#e65100'; } 
-    else if (category === 'KVA') { energyChart.data.datasets[0].borderColor = '#ffa726'; }
+    // Set warna biru yang berbeda untuk setiap kategori tombol
+    if (category === 'AMPERE') { energyChart.data.datasets[0].borderColor = '#00a8ff'; } 
+    else if (category === 'VOLTAGE') { energyChart.data.datasets[0].borderColor = '#4dd0e1'; } 
+    else if (category === 'KW') { energyChart.data.datasets[0].borderColor = '#007bff'; } 
+    else if (category === 'KVA') { energyChart.data.datasets[0].borderColor = '#005cbf'; }
 
     energyChart.data.datasets[0].label = category;
+    
+    // Ratakan grafik ke nilai saat ini saat tombol diklik (mencegah grafik jatuh ke 0)
+    let val = 0;
+    if(category === 'AMPERE') val = dbData.AMPERE.R;
+    else if(category === 'VOLTAGE') val = dbData.VOLTAGE.RS;
+    else if(category === 'KW') val = dbData.KW.TOTAL;
+    else if(category === 'KVA') val = dbData.KVA.TOTAL;
+    
+    let chartData = energyChart.data.datasets[0].data;
+    for(let i=0; i<chartData.length; i++) { chartData[i] = val; }
+    
     energyChart.update();
 }
 
 // ==========================================
-// 5. LISTENER FIREBASE & LOG PENCATATAN
+// 5. LISTENER FIREBASE & LOGIKA ONLINE/OFFLINE
 // ==========================================
 const statusText = document.getElementById('status-text');
 const logsTbody = document.getElementById('logs-tbody');
+
+let isFirstLoad = true;
+let offlineTimer; 
+
+function resetOfflineTimer() {
+    clearTimeout(offlineTimer);
+    
+    // Status ONLINE menggunakan warna biru (accent-blue)
+    statusText.innerHTML = '<i class="fa-solid fa-circle"></i> ONLINE';
+    statusText.style.color = 'var(--accent-blue)';
+
+    // Timer 10 detik untuk berubah merah jika data putus
+    offlineTimer = setTimeout(() => {
+        statusText.innerHTML = '<i class="fa-solid fa-circle"></i> OFFLINE';
+        statusText.style.color = '#ff3333'; // Merah terang
+    }, 10000); 
+}
 
 database.ref('monitoring').on('value', (snapshot) => {
     const data = snapshot.val();
@@ -117,8 +150,9 @@ database.ref('monitoring').on('value', (snapshot) => {
     if (data) {
         dbData = data;
         updateDashboard();
+        resetOfflineTimer();
 
-        // 1. Update Garis Grafik Bergerak
+        // Update Grafik Bergerak
         let liveValue = 0;
         if(currentChartCategory === 'AMPERE') liveValue = dbData.AMPERE.R;
         else if(currentChartCategory === 'VOLTAGE') liveValue = dbData.VOLTAGE.RS;
@@ -126,13 +160,18 @@ database.ref('monitoring').on('value', (snapshot) => {
         else if(currentChartCategory === 'KVA') liveValue = dbData.KVA.TOTAL;
 
         let chartData = energyChart.data.datasets[0].data;
-        chartData.shift(); 
-        chartData.push(liveValue); 
+        
+        if(isFirstLoad) {
+            for(let i=0; i<chartData.length; i++) { chartData[i] = liveValue; }
+            isFirstLoad = false;
+        } else {
+            chartData.shift(); 
+            chartData.push(liveValue); 
+        }
         energyChart.update();
 
-        // 2. Masukkan Data ke Tabel Logs (Secara Berkelanjutan)
+        // Masukkan Data ke Tabel Logs
         const waktuSekarang = new Date().toLocaleTimeString('id-ID', { hour12: false });
-        
         const newRow = document.createElement('tr');
         newRow.innerHTML = `
             <td>${data.last_update ? data.last_update.split(' ')[1] : waktuSekarang}</td>
@@ -140,19 +179,7 @@ database.ref('monitoring').on('value', (snapshot) => {
             <td>${(data.AMPERE.R || 0).toFixed(2)}</td>
             <td>${(data.KW.TOTAL || 0).toFixed(2)}</td>
         `;
-        
-        // Menyisipkan baris baru selalu di urutan paling atas
         logsTbody.prepend(newRow);
-
-        // Membatasi tabel hanya menyimpan 100 baris terbaru agar browser tidak berat
-        if (logsTbody.children.length > 100) {
-            logsTbody.removeChild(logsTbody.lastChild);
-        }
-
-        statusText.innerHTML = '<i class="fa-solid fa-circle"></i> ONLINE';
-        statusText.style.color = 'var(--accent-orange)';
+        if (logsTbody.children.length > 100) { logsTbody.removeChild(logsTbody.lastChild); }
     }
-}, (error) => {
-    statusText.innerHTML = '<i class="fa-solid fa-circle"></i> OFFLINE';
-    statusText.style.color = 'red';
 });
