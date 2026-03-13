@@ -1,16 +1,14 @@
-// ==========================================
-// 1. KONFIGURASI FIREBASE (SUDAH DIPERBAIKI)
-// ==========================================
-const firebaseConfig = {
-    apiKey: "AIzaSyCJHWvBxtmTkJsmpkdnHukF_yYAzqNdYc", // Sudah disamakan persis dengan screenshot
-    authDomain: "energy-monitoring-pbs-itk.firebaseapp.com",
-    databaseURL: "https://energy-monitoring-pbs-itk-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "energy-monitoring-pbs-itk",
-    storageBucket: "energy-monitoring-pbs-itk.appspot.com",
-    messagingSenderId: "30345474024",
-    appId: "1:30345474024:web:1ea75cd1ccb8161e81be5d",
-    measurementId: "G-FXDCSMHXX7"
-};
+// --- 1. KONFIGURASI FIREBASE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCJHWvBxtmTtKJsmpkdnHukF_yYAzqNdYc", // Kunci yang 100% benar
+            authDomain: "energy-monitoring-pbs-itk.firebaseapp.com",
+            databaseURL: "https://energy-monitoring-pbs-itk-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "energy-monitoring-pbs-itk",
+            storageBucket: "energy-monitoring-pbs-itk.firebasestorage.app", // Ini juga disesuaikan
+            messagingSenderId: "30345474024",
+            appId: "1:30345474024:web:1ea75cd1ccb8161e81be5d",
+            measurementId: "G-FXDCSMHXX7"
+        };
 
 // Inisialisasi Firebase
 firebase.initializeApp(firebaseConfig);
@@ -194,3 +192,4 @@ database.ref('monitoring').on('value', (snapshot) => {
         if (logsTbody.children.length > 100) { logsTbody.removeChild(logsTbody.lastChild); }
     }
 });
+
