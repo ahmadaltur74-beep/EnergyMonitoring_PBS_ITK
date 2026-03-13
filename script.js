@@ -1,8 +1,8 @@
 // ==========================================
-// 1. KONFIGURASI FIREBASE
+// 1. KONFIGURASI FIREBASE (SUDAH DIPERBAIKI)
 // ==========================================
 const firebaseConfig = {
-    apiKey: "AIzaSyCJHWvBxtmTKjSmpkdnHukF_yYAzqNdYc",
+    apiKey: "AIzaSyCJHWvBxtmTkJsmpkdnHukF_yYAzqNdYc", // Sudah disamakan persis dengan screenshot
     authDomain: "energy-monitoring-pbs-itk.firebaseapp.com",
     databaseURL: "https://energy-monitoring-pbs-itk-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "energy-monitoring-pbs-itk",
@@ -16,7 +16,6 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
-// ... (sisa kode biarkan sama seperti sebelumnya) ...
 // ==========================================
 // 2. SISTEM NAVIGASI TAB
 // ==========================================
@@ -41,12 +40,12 @@ navLogs.addEventListener('click', () => {
 });
 
 // ==========================================
-// 3. INISIALISASI GRAFIK CHART.JS (TEMA BIRU & SMOOTH)
+// 3. INISIALISASI GRAFIK CHART.JS
 // ==========================================
 const ctx = document.getElementById('energyChart').getContext('2d');
 let gradientBlue = ctx.createLinearGradient(0, 0, 0, 200);
-gradientBlue.addColorStop(0, 'rgba(0, 168, 255, 0.4)'); // Biru transparan atas
-gradientBlue.addColorStop(1, 'rgba(0, 168, 255, 0.0)'); // Transparan bawah
+gradientBlue.addColorStop(0, 'rgba(0, 168, 255, 0.4)'); 
+gradientBlue.addColorStop(1, 'rgba(0, 168, 255, 0.0)'); 
 
 let energyChart = new Chart(ctx, {
     type: 'line',
@@ -55,7 +54,7 @@ let energyChart = new Chart(ctx, {
         datasets: [{
             label: 'AMPERE',
             data: [0, 0, 0, 0, 0, 0, 0],
-            borderColor: '#00a8ff', // Garis biru utama
+            borderColor: '#00a8ff', 
             backgroundColor: gradientBlue,
             borderWidth: 2,
             pointBackgroundColor: '#121215',
@@ -69,10 +68,7 @@ let energyChart = new Chart(ctx, {
     options: {
         responsive: true,
         maintainAspectRatio: false,
-        animation: {
-            duration: 500, // Membuat transisi garis lebih mengalir
-            easing: 'linear'
-        },
+        animation: { duration: 500, easing: 'linear' },
         plugins: { legend: { display: false } },
         scales: {
             y: { beginAtZero: true, grid: { color: 'rgba(255, 255, 255, 0.03)' }, ticks: { color: '#888888', font: {size: 10} } },
@@ -81,11 +77,11 @@ let energyChart = new Chart(ctx, {
     }
 });
 
-let dbData = { AMPERE: { R: 0 }, VOLTAGE: { RS: 0 }, KW: { TOTAL: 0 }, KVA: { TOTAL: 0 }, KVAR: { TOTAL: 0 }, KWH: { TOTAL: 0 } };
+let dbData = {}; // Kosongkan sejak awal agar aman
 let currentChartCategory = 'AMPERE';
 
 // ==========================================
-// 4. FUNGSI UPDATE UI (HOME)
+// 4. FUNGSI UPDATE UI (KODE ANTI-CRASH DENGAN '?.' )
 // ==========================================
 function updateDashboard() {
     const lineAmpere = document.getElementById('line-ampere').value;
@@ -93,14 +89,24 @@ function updateDashboard() {
     const lineKW = document.getElementById('line-kw').value;
     const lineKVA = document.getElementById('line-kva').value;
 
-    document.getElementById('val-ampere').innerText = `${(dbData.AMPERE[lineAmpere] || 0).toFixed(2)} A`;
-    document.getElementById('val-volt').innerText = `${(dbData.VOLTAGE[lineVolt] || 0).toFixed(1)} V`;
-    document.getElementById('val-kw').innerText = `${(dbData.KW[lineKW] || 0).toFixed(2)} kW`;
-    document.getElementById('val-kva').innerText = `${(dbData.KVA[lineKVA] || 0).toFixed(2)} kVA`;
+    // Gunakan '?.' (Optional Chaining) agar web tidak rusak jika data Firebase kosong
+    const valAmp = dbData?.AMPERE?.[lineAmpere] || 0;
+    const valVolt = dbData?.VOLTAGE?.[lineVolt] || 0;
+    const valKw = dbData?.KW?.[lineKW] || 0;
+    const valKva = dbData?.KVA?.[lineKVA] || 0;
+    
+    const kwhTot = dbData?.KWH?.TOTAL || 0;
+    const kwTot = dbData?.KW?.TOTAL || 0;
+    const kvarTot = dbData?.KVAR?.TOTAL || 0;
 
-    document.getElementById('val-kwh').innerText = (dbData.KWH.TOTAL || 0).toLocaleString('en-US', {minimumFractionDigits: 1});
-    document.getElementById('val-kw-tot').innerText = (dbData.KW.TOTAL || 0).toFixed(2);
-    document.getElementById('val-kvar-tot').innerText = (dbData.KVAR.TOTAL || 0).toFixed(2);
+    document.getElementById('val-ampere').innerText = `${valAmp.toFixed(2)} A`;
+    document.getElementById('val-volt').innerText = `${valVolt.toFixed(1)} V`;
+    document.getElementById('val-kw').innerText = `${valKw.toFixed(2)} kW`;
+    document.getElementById('val-kva').innerText = `${valKva.toFixed(2)} kVA`;
+
+    document.getElementById('val-kwh').innerText = kwhTot.toLocaleString('en-US', {minimumFractionDigits: 1});
+    document.getElementById('val-kw-tot').innerText = kwTot.toFixed(2);
+    document.getElementById('val-kvar-tot').innerText = kvarTot.toFixed(2);
 }
 
 document.querySelectorAll('.line-select').forEach(select => select.addEventListener('change', updateDashboard));
@@ -110,7 +116,6 @@ function updateChart(category) {
     event.target.classList.add('active');
     currentChartCategory = category;
 
-    // Set warna biru yang berbeda untuk setiap kategori tombol
     if (category === 'AMPERE') { energyChart.data.datasets[0].borderColor = '#00a8ff'; } 
     else if (category === 'VOLTAGE') { energyChart.data.datasets[0].borderColor = '#4dd0e1'; } 
     else if (category === 'KW') { energyChart.data.datasets[0].borderColor = '#007bff'; } 
@@ -118,12 +123,11 @@ function updateChart(category) {
 
     energyChart.data.datasets[0].label = category;
     
-    // Ratakan grafik ke nilai saat ini saat tombol diklik (mencegah grafik jatuh ke 0)
     let val = 0;
-    if(category === 'AMPERE') val = dbData.AMPERE.R;
-    else if(category === 'VOLTAGE') val = dbData.VOLTAGE.RS;
-    else if(category === 'KW') val = dbData.KW.TOTAL;
-    else if(category === 'KVA') val = dbData.KVA.TOTAL;
+    if(category === 'AMPERE') val = dbData?.AMPERE?.R || 0;
+    else if(category === 'VOLTAGE') val = dbData?.VOLTAGE?.RS || 0;
+    else if(category === 'KW') val = dbData?.KW?.TOTAL || 0;
+    else if(category === 'KVA') val = dbData?.KVA?.TOTAL || 0;
     
     let chartData = energyChart.data.datasets[0].data;
     for(let i=0; i<chartData.length; i++) { chartData[i] = val; }
@@ -143,14 +147,12 @@ let offlineTimer;
 function resetOfflineTimer() {
     clearTimeout(offlineTimer);
     
-    // Status ONLINE menggunakan warna biru (accent-blue)
     statusText.innerHTML = '<i class="fa-solid fa-circle"></i> ONLINE';
     statusText.style.color = 'var(--accent-blue)';
 
-    // Timer 10 detik untuk berubah merah jika data putus
     offlineTimer = setTimeout(() => {
         statusText.innerHTML = '<i class="fa-solid fa-circle"></i> OFFLINE';
-        statusText.style.color = '#ff3333'; // Merah terang
+        statusText.style.color = '#ff3333'; 
     }, 10000); 
 }
 
@@ -162,12 +164,11 @@ database.ref('monitoring').on('value', (snapshot) => {
         updateDashboard();
         resetOfflineTimer();
 
-        // Update Grafik Bergerak
         let liveValue = 0;
-        if(currentChartCategory === 'AMPERE') liveValue = dbData.AMPERE.R;
-        else if(currentChartCategory === 'VOLTAGE') liveValue = dbData.VOLTAGE.RS;
-        else if(currentChartCategory === 'KW') liveValue = dbData.KW.TOTAL;
-        else if(currentChartCategory === 'KVA') liveValue = dbData.KVA.TOTAL;
+        if(currentChartCategory === 'AMPERE') liveValue = dbData?.AMPERE?.R || 0;
+        else if(currentChartCategory === 'VOLTAGE') liveValue = dbData?.VOLTAGE?.RS || 0;
+        else if(currentChartCategory === 'KW') liveValue = dbData?.KW?.TOTAL || 0;
+        else if(currentChartCategory === 'KVA') liveValue = dbData?.KVA?.TOTAL || 0;
 
         let chartData = energyChart.data.datasets[0].data;
         
@@ -180,17 +181,16 @@ database.ref('monitoring').on('value', (snapshot) => {
         }
         energyChart.update();
 
-        // Masukkan Data ke Tabel Logs
         const waktuSekarang = new Date().toLocaleTimeString('id-ID', { hour12: false });
         const newRow = document.createElement('tr');
+        // Kode anti-crash untuk tabel logs
         newRow.innerHTML = `
-            <td>${data.last_update ? data.last_update.split(' ')[1] : waktuSekarang}</td>
-            <td>${(data.VOLTAGE.RS || 0).toFixed(1)}</td>
-            <td>${(data.AMPERE.R || 0).toFixed(2)}</td>
-            <td>${(data.KW.TOTAL || 0).toFixed(2)}</td>
+            <td>${data?.last_update ? data.last_update.split(' ')[1] : waktuSekarang}</td>
+            <td>${(data?.VOLTAGE?.RS || 0).toFixed(1)}</td>
+            <td>${(data?.AMPERE?.R || 0).toFixed(2)}</td>
+            <td>${(data?.KW?.TOTAL || 0).toFixed(2)}</td>
         `;
         logsTbody.prepend(newRow);
         if (logsTbody.children.length > 100) { logsTbody.removeChild(logsTbody.lastChild); }
     }
-
 });
