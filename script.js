@@ -2,11 +2,21 @@
 // 1. KONFIGURASI FIREBASE
 // ==========================================
 const firebaseConfig = {
-    databaseURL: "https://energy-monitoring-pbs-itk-default-rtdb.asia-southeast1.firebasedatabase.app/"
+    apiKey: "AIzaSyCJHWvBxtmTKjSmpkdnHukF_yYAzqNdYc",
+    authDomain: "energy-monitoring-pbs-itk.firebaseapp.com",
+    databaseURL: "https://energy-monitoring-pbs-itk-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "energy-monitoring-pbs-itk",
+    storageBucket: "energy-monitoring-pbs-itk.appspot.com",
+    messagingSenderId: "30345474024",
+    appId: "1:30345474024:web:1ea75cd1ccb8161e81be5d",
+    measurementId: "G-FXDCSMHXX7"
 };
+
+// Inisialisasi Firebase
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
+// ... (sisa kode biarkan sama seperti sebelumnya) ...
 // ==========================================
 // 2. SISTEM NAVIGASI TAB
 // ==========================================
@@ -182,4 +192,5 @@ database.ref('monitoring').on('value', (snapshot) => {
         logsTbody.prepend(newRow);
         if (logsTbody.children.length > 100) { logsTbody.removeChild(logsTbody.lastChild); }
     }
+
 });
