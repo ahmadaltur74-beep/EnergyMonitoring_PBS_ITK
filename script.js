@@ -129,17 +129,25 @@ function updateDashboard() {
     var valVolt = 0; if (dbData && dbData.VOLTAGE && dbData.VOLTAGE[lineVolt]) valVolt = dbData.VOLTAGE[lineVolt];
     var valKw = 0; if (dbData && dbData.KW && dbData.KW[lineKW]) valKw = dbData.KW[lineKW];
     var valKva = 0; if (dbData && dbData.KVA && dbData.KVA[lineKVA]) valKva = dbData.KVA[lineKVA];
+    
     var kwhTot = 0; if (dbData && dbData.KWH && dbData.KWH.TOTAL) kwhTot = dbData.KWH.TOTAL;
     var kwTot = 0; if (dbData && dbData.KW && dbData.KW.TOTAL) kwTot = dbData.KW.TOTAL;
     var kvarTot = 0; if (dbData && dbData.KVAR && dbData.KVAR.TOTAL) kvarTot = dbData.KVAR.TOTAL;
+    
+    // Penambahan penarik data KVA Total
+    var kvaTot = 0; if (dbData && dbData.KVA && dbData.KVA.TOTAL) kvaTot = dbData.KVA.TOTAL;
 
     document.getElementById('val-ampere').innerText = valAmp.toFixed(2) + ' A';
     document.getElementById('val-volt').innerText = valVolt.toFixed(1) + ' V';
     document.getElementById('val-kw').innerText = valKw.toFixed(2) + ' kW';
     document.getElementById('val-kva').innerText = valKva.toFixed(2) + ' kVA';
+    
     document.getElementById('val-kwh').innerText = kwhTot.toLocaleString('en-US', {minimumFractionDigits: 1});
     document.getElementById('val-kw-tot').innerText = kwTot.toFixed(2);
     document.getElementById('val-kvar-tot').innerText = kvarTot.toFixed(2);
+    
+    // Memasukkan angka KVA Total ke HTML
+    document.getElementById('val-kva-tot').innerText = kvaTot.toFixed(2);
 }
 
 var selects = document.querySelectorAll('.line-select');
