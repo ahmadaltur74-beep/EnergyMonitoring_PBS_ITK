@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Energy App Android</title>
-    <link rel="stylesheet" href="style.css?v=final">
+    <link rel="stylesheet" href="style.css?v=final4">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .logs-table th, .logs-table td { white-space: nowrap; text-align: center; }
+        .logs-table th:first-child, .logs-table td:first-child { text-align: left; }
+    </style>
 </head>
 <body>
     <div class="app-wrapper">
@@ -41,20 +45,6 @@
                 </div>
             </section>
 
-            <section class="chart-panel">
-                <div class="panel-head">
-                    <h3>Energy Trends</h3>
-                    <i class="fa-solid fa-expand"></i>
-                </div>
-                <div class="chart-wrapper"><canvas id="energyChart"></canvas></div>
-                <div class="chart-buttons-scroll">
-                    <button onclick="updateChart('AMPERE')" class="active">AMP</button>
-                    <button onclick="updateChart('VOLTAGE')">VOLT</button>
-                    <button onclick="updateChart('KW')">KW</button>
-                    <button onclick="updateChart('KVA')">KVA</button>
-                </div>
-            </section>
-
             <section class="details-section">
                 <div class="panel-head"><h3>Phase Details</h3></div>
                 <div class="details-grid">
@@ -85,13 +75,47 @@
 
         <main class="app-content" id="view-logs" style="display: none;">
             <div class="panel-head" style="margin-bottom: 15px;">
-                <h3>Live Data Logs</h3><span style="font-size: 10px; color: var(--accent-orange);">Session History</span>
+                <h3>Live Data Logs</h3><span style="font-size: 10px; color: var(--accent-orange);">Geser ke kanan ➔</span>
             </div>
             <div class="logs-container">
                 <table class="logs-table">
-                    <thead><tr><th>Waktu</th><th>Volt (RS)</th><th>Ampere (R)</th><th>kW (Tot)</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>Waktu</th>
+                            <th>V (RS)</th>
+                            <th>V (ST)</th>
+                            <th>V (RT)</th>
+                            <th>A (R)</th>
+                            <th>A (S)</th>
+                            <th>A (T)</th>
+                            <th>kW</th>
+                            <th>kVA</th>
+                            <th>kVAr</th>
+                        </tr>
+                    </thead>
                     <tbody id="logs-tbody"></tbody>
                 </table>
+            </div>
+            <div style="height: 80px;"></div>
+        </main>
+
+        <main class="app-content" id="view-graph" style="display: none;">
+            <div class="panel-head">
+                <h3>Analisis Tren Energi</h3>
+                <i class="fa-solid fa-chart-line" style="color: var(--accent-blue);"></i>
+            </div>
+            <p style="font-size: 11px; color: #888; margin-top: 0; margin-bottom: 15px;">Pilih kategori untuk melihat lonjakan berdasar waktu.</p>
+            
+            <div class="chart-buttons-scroll">
+                <button onclick="updateChart('VOLTAGE')" class="active">VOLT</button>
+                <button onclick="updateChart('AMPERE')">AMP</button>
+                <button onclick="updateChart('KW')">kW</button>
+                <button onclick="updateChart('KVA')">kVA</button>
+                <button onclick="updateChart('KVAR')">kVAr</button>
+            </div>
+            
+            <div class="chart-panel" style="margin-top: 15px;">
+                <div class="chart-wrapper" style="height: 50vh;"><canvas id="energyChart"></canvas></div>
             </div>
             <div style="height: 80px;"></div>
         </main>
@@ -104,13 +128,12 @@
                 <table class="logs-table">
                     <thead>
                         <tr>
-                            <th>Tanggal</th>
-                            <th>Total KWh</th>
-                            <th>Max kW</th>
+                            <th style="text-align: left;">Tanggal</th>
+                            <th style="text-align: right;">Total KWh (Akumulasi)</th>
                         </tr>
                     </thead>
                     <tbody id="history-tbody">
-                        <tr><td colspan="3" style="text-align: center;">Mengambil data...</td></tr>
+                        <tr><td colspan="2" style="text-align: center;">Mengambil data...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -120,12 +143,13 @@
         <nav class="bottom-nav">
             <div class="nav-item active" id="nav-home"><i class="fa-solid fa-border-all"></i><span>Home</span></div>
             <div class="nav-item" id="nav-logs"><i class="fa-solid fa-list-ul"></i><span>Live</span></div>
+            <div class="nav-item" id="nav-graph"><i class="fa-solid fa-chart-area"></i><span>Grafik</span></div>
             <div class="nav-item" id="nav-history"><i class="fa-solid fa-calendar-days"></i><span>History</span></div>
         </nav>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="script.js?v=final"></script>
+    <script src="script.js?v=final4"></script>
 </body>
 </html>
